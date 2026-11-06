@@ -1,17 +1,27 @@
+import { useState } from 'react'
 import NoteCard from './NoteCard.jsx'
 
-const notes = [
-  {
-    title: 'Review map and filter',
-    body: 'Redo the TodoMVC steps without looking at the guide.'
-  },
-  {
-    title: 'Prepare for the quiz',
-    body: 'Practice writing one handler for many inputs.'
-  }
-];
+const handleAddNote = (event) => {
+  const { name, value } = event.target;
+  addNote({ ...note, [name]: value });
+};
 
 function Notes() {
+  const [notes, setNotes] = useState([
+    {
+      title: 'Review map and filter',
+      body: 'Redo the TodoMVC steps without looking at the guide.'
+    },
+    {
+      title: 'Prepare for the quiz',
+      body: 'Practice writing one handler for many inputs.'
+    }
+  ]);
+
+  const addNote = (newNote) => {
+    setNotes([...notes, newNote]);
+  };
+
   return (
     <div className="grid min-h-screen grid-cols-[420px_1fr]">
         <aside className="sticky top-0 flex h-screen flex-col gap-5 bg-white px-8 py-9 shadow-[0_2px_4px_0_rgba(0,0,0,0.2),0_25px_50px_0_rgba(0,0,0,0.1)]">
@@ -29,7 +39,7 @@ function Notes() {
 
         <form className="grid gap-3">
           <p className="text-[13px] font-normal tracking-wide text-[#949494]">NEW NOTE</p>
-          <input
+          <input 
             name="title"
             placeholder="Title"
             className="h-[52px] w-full border border-[#e6e6e6] px-4 text-lg outline-none placeholder:text-black/40 placeholder:italic focus:border-[#cf7d7d]"
