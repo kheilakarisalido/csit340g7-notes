@@ -38,6 +38,9 @@ function Notes() {
     setNotes(notes.filter((note) => note.id !== id))
     }
 
+    function handleDelete(id) {
+    setNotes(notes.filter((note) => note.id !== id))
+    }
 
   return (
     <div className="grid min-h-screen grid-cols-[420px_1fr]">
