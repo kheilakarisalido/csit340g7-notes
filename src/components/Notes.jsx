@@ -1,11 +1,15 @@
-import {useState} from 'react'
+import {useState, useEffect } from 'react'
 import NoteCard from './NoteCard.jsx'
 
 function Notes() {
     const [notes, setNotes] = useState([]);
     const [form, setForm] = useState({ title: '', body: '' })
     const [searchTerm, setSearchTerm] = useState('')
-
+    
+    useEffect(() => {
+      localStorage.setItem('notes', JSON.stringify(notes))
+    }, [notes]) 
+    
     function handleChange(event) {
     const { name, value } = event.target
     setForm({ ...form, [name]: value })
