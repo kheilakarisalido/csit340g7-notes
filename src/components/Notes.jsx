@@ -74,9 +74,19 @@ function Notes() {
     }
   }
 
-    const handleDelete = useCallback((id) => {
-    setNotes(notes.filter((note) => note.id !== id))
-    }, [notes])
+    const handleDelete = useCallback(async (id) => {
+      try {
+        const res = await fetch(API_URL + '/notes/' + id, {
+          method: 'DELETE',
+        })
+        if (!res.ok) {
+          throw new Error('The server answered ' + res.status)
+        }
+        setNotes((currentNotes) => currentNotes.filter((note) => note.id !== id))
+      } catch (err) {
+        setError(err.message)
+      }
+    }, [])
 
     
     const filteredNotes = useMemo(() => {
@@ -137,6 +147,13 @@ function Notes() {
           {filteredNotes.map((note) => (
             <li
               key={note.id}
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key.toLowerCase() === 'x') {
+                  event.preventDefault()
+                  handleDelete(note.id)
+                }
+              }}
               className="relative min-h-32 bg-white px-6 py-5 shadow-[0_2px_4px_0_rgba(0,0,0,0.2),0_25px_50px_0_rgba(0,0,0,0.1)]"
             >
                 <NoteCard
