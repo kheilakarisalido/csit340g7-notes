@@ -5,6 +5,8 @@ const API_URL = import.meta.env.VITE_API_URL
 
 function Notes() {
   const [notes, setNotes] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [form, setForm] = useState(() => {
     const saved = localStorage.getItem('draft')
     return saved ? JSON.parse(saved) : { title: '', body: '' }
@@ -13,13 +15,26 @@ function Notes() {
     const titleRef = useRef(null)
     
     useEffect(() => {
+      let ignore = false
+
       async function loadNotes() {
-      const res = await fetch(API_URL + '/notes')
-      const data = await res.json()
-      setNotes(data)
+       try {
+        const res = await fetch(API_URL + '/notes')
+        if (!res.ok) {
+          throw new Error('The server answered ' + res.status)
+        }
+        const data = await res.json()
+        if (!ignore) setNotes(data)
+      } catch (err) {
+        if (!ignore) setError(err.message)
+      }
+      if (!ignore) setLoading(false)
     }
  
     loadNotes()
+    return () => {
+      ignore = true
+    }
   }, [])
 
     useEffect(() => {
@@ -71,7 +86,7 @@ function Notes() {
             placeholder="Search by title"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-[52px] w-full border border-[#e6e6e6] px-4 text-lg outline-none placeholder:text-black/40 placeholder:italic focus:border-[#cf7d7d]"
+            className="h-13 w-full border border-[#e6e6e6] px-4 text-lg outline-none placeholder:text-black/40 placeholder:italic focus:border-[#cf7d7d]"
           />
         </div>
 
@@ -83,7 +98,7 @@ function Notes() {
             placeholder="Title"
             value={form.title}
             onChange={handleChange}
-            className="h-[52px] w-full border border-[#e6e6e6] px-4 text-lg outline-none placeholder:text-black/40 placeholder:italic focus:border-[#cf7d7d]"
+            className="h-13 w-full border border-[#e6e6e6] px-4 text-lg outline-none placeholder:text-black/40 placeholder:italic focus:border-[#cf7d7d]"
             />
 
             <textarea
@@ -91,12 +106,12 @@ function Notes() {
             placeholder="Write your note"
             value={form.body}
             onChange={handleChange}
-            className="h-[120px] w-full resize-none py-3 border border-[#e6e6e6] px-4 text-lg outline-none placeholder:text-black/40 placeholder:italic focus:border-[#cf7d7d]"
+            className="h-30 w-full resize-none py-3 border border-[#e6e6e6] px-4 text-lg outline-none placeholder:text-black/40 placeholder:italic focus:border-[#cf7d7d]"
             />
 
            <button
             type="submit"
-            className="h-[50px] cursor-pointer bg-[#b83f45] text-[17px] font-normal text-white hover:bg-[#a33439]"
+            className="h-12.5 cursor-pointer bg-[#b83f45] text-[17px] font-normal text-white hover:bg-[#a33439]"
           >
             Add note
           </button>
@@ -106,23 +121,24 @@ function Notes() {
       <section className="px-12 py-11">
         <h2 className="mb-6 text-3xl">All notes</h2>
 
-        {filteredNotes.length > 0 ? (
-          <ul className="grid grid-cols-3 items-start gap-5">
-            {filteredNotes.map((note) => (
-              <li
-                key={note.id}
-                className="relative min-h-32 bg-white px-6 py-5 shadow-[0_2px_4px_0_rgba(0,0,0,0.2),0_25px_50px_0_rgba(0,0,0,0.1)]"
-              >
-                 <NoteCard
-                id={note.id}
-                title={note.title}
-                body={note.body}
-                onDelete={handleDelete}
-              />
-              </li>
+        <ul className="grid grid-cols-3 items-start gap-5">
+          {filteredNotes.map((note) => (
+            <li
+              key={note.id}
+              className="relative min-h-32 bg-white px-6 py-5 shadow-[0_2px_4px_0_rgba(0,0,0,0.2),0_25px_50px_0_rgba(0,0,0,0.1)]"
+            >
+                <NoteCard
+              id={note.id}
+              title={note.title}
+              body={note.body}
+              onDelete={handleDelete}
+            />
+            </li>
             ))}
           </ul>
-        ) : (
+        {loading && <p className="text-lg text-[#949494]">Loading notes...</p>}
+        {error && <p className="text-lg text-[#b83f45]">{error}</p>}
+        {!loading && !error && filteredNotes.length === 0 && (
           <p className="text-[17px] text-[#949494]">No notes found</p>
         )}
       </section>
